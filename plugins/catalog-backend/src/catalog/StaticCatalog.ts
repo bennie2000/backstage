@@ -27,12 +27,19 @@ export class StaticCatalog implements Catalog {
     this._locations = locations;
   }
 
+  async addOrUpdateComponent(component: Component): Promise<Component> {
+    this._components = this._components
+      .filter((c) => c.name !== component.name)
+      .concat([component]);
+    return component;
+  }
+
   async components(): Promise<Component[]> {
     return this._components.slice();
   }
 
   async component(name: string): Promise<Component> {
-    const item = this._components.find(i => i.name === name);
+    const item = this._components.find((i) => i.name === name);
     if (!item) {
       throw new NotFoundError(`Found no component with name ${name}`);
     }
@@ -46,11 +53,11 @@ export class StaticCatalog implements Catalog {
   }
 
   async removeLocation(id: string): Promise<void> {
-    this._locations = this._locations.filter(l => l.id !== id);
+    this._locations = this._locations.filter((l) => l.id !== id);
   }
 
   async location(id: string): Promise<Location> {
-    const location = this._locations.find(l => l.id === id);
+    const location = this._locations.find((l) => l.id === id);
     if (!location) {
       throw new NotFoundError(`Found no location with ID ${id}`);
     }

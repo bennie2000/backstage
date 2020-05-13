@@ -14,39 +14,28 @@
  * limitations under the License.
  */
 
-import knex from 'knex';
-import path from 'path';
 import { PassThrough } from 'stream';
 import winston from 'winston';
-import { DatabaseCatalog } from './DatabaseCatalog';
 import { CatalogLogic } from './CatalogLogic';
+import { Catalog } from './types';
 
-describe('DatabaseCatalog', () => {
-  const database = knex({
-    client: 'sqlite3',
-    connection: ':memory:',
-    useNullAsDefault: true,
-  });
-
+describe('CatalogLogic', () => {
   const logger = winston.createLogger({
     transports: [new winston.transports.Stream({ stream: new PassThrough() })],
   });
 
-  beforeEach(async () => {
-    await database.migrate.latest({
-      directory: path.resolve(__dirname, '..', 'migrations'),
-      loadExtensions: ['.ts'],
-    });
-  });
-
-  it('instantiates', () => {
-    const catalog = new DatabaseCatalog(database, logger);
-    expect(catalog).toBeDefined();
-  });
-
   describe(`refreshLocations`, () => {
     it('works with no locations added', async () => {
-      const catalog = new DatabaseCatalog(database, logger);
+      const catalog = ({
+        addOrUpdateComponent: jest.fn(),
+        locations: jest.fn(() => [
+          {
+            id: '123',
+            type: 'some',
+            target: 'thing',
+          },
+        ]),
+      } as unknown) as Catalog;
       await expect(
         CatalogLogic.refreshLocations(catalog, logger),
       ).resolves.toBeUndefined();
